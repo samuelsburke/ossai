@@ -414,6 +414,183 @@
     ::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
 
+    /* ── Gantt Tab ─────────────────────────────── */
+    .gantt-toolbar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: .8rem 1.25rem; margin-bottom: 1rem;
+      display: flex; align-items: center; flex-wrap: wrap; gap: 1rem;
+    }
+    .gantt-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; flex: 1; }
+    .glg { display: flex; align-items: center; gap: .45rem; font-size: .78rem; color: var(--text-mid); }
+    .glg-swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .glg-swatch.milestone {
+      width: 10px; height: 10px; border-radius: 2px;
+      background: var(--white); transform: rotate(45deg);
+    }
+    .gantt-btn {
+      background: var(--surface-3); border: 1px solid var(--border-mid);
+      color: var(--accent-bright); border-radius: 8px;
+      padding: .4rem .9rem; font-size: .75rem; font-weight: 700;
+      font-family: 'Space Mono', monospace; letter-spacing: .04em;
+      text-transform: uppercase; cursor: pointer; transition: all .15s;
+      white-space: nowrap;
+    }
+    .gantt-btn:hover { background: var(--accent-dim); color: var(--white); border-color: var(--border-bright); }
+    .gantt-btn.ghost { color: var(--text-dim); background: none; }
+    .gantt-btn.ghost:hover { color: var(--red); border-color: rgba(248,113,113,.4); background: none; }
+
+    .gantt-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+      display: flex; position: relative;
+    }
+    .gantt-labels {
+      flex: 0 0 232px; border-right: 1px solid var(--border-mid);
+      background: var(--surface); z-index: 3;
+    }
+    .gantt-scroll { flex: 1; overflow-x: auto; overflow-y: hidden; }
+    .gantt-chart { position: relative; }
+
+    .grow-head { height: 42px; border-bottom: 1px solid var(--border-mid); position: relative; }
+    .gantt-labels .grow-head {
+      display: flex; align-items: flex-end; padding: 0 0 .4rem .9rem;
+      font-family: 'Space Mono', monospace; font-size: .66rem;
+      color: var(--text-dim); text-transform: uppercase; letter-spacing: .09em;
+    }
+    .gmonth {
+      position: absolute; top: 0; height: 21px;
+      border-left: 1px solid var(--border-mid);
+      padding-left: .45rem; font-family: 'Space Mono', monospace;
+      font-size: .68rem; color: var(--text-mid); letter-spacing: .06em;
+      line-height: 21px; white-space: nowrap; overflow: hidden;
+    }
+    .gweek {
+      position: absolute; top: 21px; height: 21px;
+      border-left: 1px solid var(--border);
+      padding-left: .3rem; font-family: 'Space Mono', monospace;
+      font-size: .6rem; color: var(--text-dim); line-height: 21px;
+    }
+
+    .gphase {
+      height: 26px; display: flex; align-items: center;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+      font-size: .68rem; font-weight: 700;
+      font-family: 'Space Mono', monospace;
+      text-transform: uppercase; letter-spacing: .08em;
+      padding-left: .9rem; gap: .5rem;
+    }
+    .gantt-chart .gphase { padding-left: 0; background: var(--surface-2); }
+
+    .grow { height: 30px; border-bottom: 1px solid rgba(255,115,0,.05); position: relative; }
+    .gantt-labels .grow {
+      display: flex; align-items: center; padding: 0 .6rem 0 1.5rem;
+      font-size: .74rem; color: var(--text-mid);
+      overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+      cursor: pointer;
+    }
+    .gantt-labels .grow:hover { color: var(--text); background: rgba(255,115,0,.05); }
+    .gantt-labels .grow.sel { color: var(--accent-bright); background: rgba(255,115,0,.08); }
+    .gantt-labels .grow span {
+      overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    }
+
+    .gcol {
+      position: absolute; top: 0; bottom: 0; width: 1px;
+      background: rgba(255,115,0,.05); pointer-events: none;
+    }
+    .gcol.month { background: rgba(255,115,0,.13); }
+    .gcol.weekend { width: auto; background: rgba(255,255,255,.014); }
+    .gtoday {
+      position: absolute; top: 0; bottom: 0; width: 1px;
+      background: var(--accent); box-shadow: 0 0 8px var(--accent-glow);
+      pointer-events: none; z-index: 2;
+    }
+    .gtoday::before {
+      content: 'TODAY'; position: absolute; top: 2px; left: 4px;
+      font-family: 'Space Mono', monospace; font-size: .55rem;
+      color: var(--accent-bright); letter-spacing: .1em;
+    }
+
+    .gbar {
+      position: absolute; top: 6px; height: 18px;
+      border-radius: 4px; cursor: grab;
+      box-shadow: 0 0 0 2px var(--surface);
+      display: flex; align-items: center;
+      transition: filter .15s;
+    }
+    .gbar:hover { filter: brightness(1.22); }
+    .gbar.sel { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--white); }
+    .gbar.dragging { cursor: grabbing; filter: brightness(1.3); }
+    .ghandle {
+      position: absolute; top: 0; bottom: 0; width: 7px;
+      cursor: ew-resize; opacity: 0; background: rgba(255,255,255,.45);
+    }
+    .ghandle.l { left: 0;  border-radius: 4px 0 0 4px; }
+    .ghandle.r { right: 0; border-radius: 0 4px 4px 0; }
+    .gbar:hover .ghandle { opacity: 1; }
+    .gbar-est { background-image: repeating-linear-gradient(45deg, rgba(0,0,0,.28) 0 4px, transparent 4px 8px); }
+
+    .gmile {
+      position: absolute; top: 8px; width: 14px; height: 14px;
+      background: var(--white); transform: rotate(45deg);
+      border-radius: 2px; cursor: grab; margin-left: -7px;
+      box-shadow: 0 0 0 2px var(--surface), 0 0 10px rgba(255,255,255,.35);
+    }
+    .gmile.sel { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--accent-bright); }
+
+    .gtip {
+      position: fixed; z-index: 900; pointer-events: none;
+      background: var(--surface-3); border: 1px solid var(--border-bright);
+      border-radius: 8px; padding: .5rem .75rem;
+      font-size: .76rem; color: var(--text); line-height: 1.55;
+      box-shadow: 0 10px 30px rgba(0,0,0,.7); max-width: 280px;
+      opacity: 0; transition: opacity .12s;
+    }
+    .gtip.on { opacity: 1; }
+    .gtip b { color: var(--accent-bright); display: block; margin-bottom: .15rem; }
+    .gtip .gtip-meta { color: var(--text-dim); font-family: 'Space Mono', monospace; font-size: .68rem; }
+
+    /* ── Gantt Editor ──────────────────────────── */
+    .gantt-editor {
+      background: var(--surface);
+      border: 1px solid var(--border-mid);
+      border-radius: 14px; padding: 1.25rem 1.5rem; margin-top: 1rem;
+      display: none;
+    }
+    .gantt-editor.on { display: block; }
+    .ged-title {
+      font-size: .72rem; color: var(--text-dim);
+      font-family: 'Space Mono', monospace; text-transform: uppercase;
+      letter-spacing: .09em; margin-bottom: .9rem;
+    }
+    .ged-grid { display: flex; flex-wrap: wrap; gap: .9rem; align-items: flex-end; }
+    .ged-field { display: flex; flex-direction: column; gap: .3rem; }
+    .ged-field.grow-wide { flex: 1 1 260px; }
+    .ged-field label {
+      font-size: .66rem; color: var(--text-dim);
+      font-family: 'Space Mono', monospace;
+      text-transform: uppercase; letter-spacing: .07em;
+    }
+    .ged-field input, .ged-field select {
+      background: var(--surface-2); border: 1px solid var(--border-mid);
+      border-radius: 7px; padding: .45rem .65rem;
+      color: var(--text); font-family: inherit; font-size: .84rem;
+      outline: none; transition: border-color .15s;
+    }
+    .ged-field input:focus, .ged-field select:focus { border-color: var(--border-bright); }
+    .ged-field input[type="date"] { font-family: 'Space Mono', monospace; font-size: .78rem; color-scheme: dark; }
+    .ged-actions { display: flex; gap: .5rem; margin-left: auto; }
+    .ged-hint { font-size: .74rem; color: var(--text-dim); margin-top: .8rem; line-height: 1.6; }
+
+    @media (max-width: 700px) {
+      .gantt-labels { flex-basis: 150px; }
+      .gantt-labels .grow { padding-left: .8rem; font-size: .68rem; }
+    }
+
     @media (max-width: 600px) {
       header { padding: 1.1rem 1.25rem; }
       .header-badge { margin-left: 0; }
@@ -479,6 +656,7 @@ const firebaseConfig = {
   <div class="tab-nav">
     <button class="tab-btn active"  onclick="switchTab('plan',this)">📋 Plan</button>
     <button class="tab-btn"         onclick="switchTab('checklist',this)">✅ Checklist</button>
+    <button class="tab-btn"         onclick="switchTab('gantt',this)">🗓️ Timeline</button>
     <button class="tab-btn"         onclick="switchTab('pert',this)">📊 PERT Chart</button>
     <button class="tab-btn"         onclick="switchTab('curriculum',this)">🎓 Curriculum</button>
   </div>
@@ -604,6 +782,23 @@ const firebaseConfig = {
   <!-- ═══════ CHECKLIST TAB ═══════ -->
   <div id="tab-checklist" class="tab-content">
     <div id="checklist-root"></div>
+  </div>
+
+  <!-- ═══════ GANTT TAB ═══════ -->
+  <div id="tab-gantt" class="tab-content">
+    <div class="gantt-toolbar">
+      <div class="gantt-legend" id="gantt-legend"></div>
+      <button class="gantt-btn" onclick="addGanttTask()">+ Add Task</button>
+      <button class="gantt-btn ghost" onclick="resetSchedule()">Reset</button>
+    </div>
+    <div class="gantt-wrap">
+      <div class="gantt-labels" id="gantt-labels"></div>
+      <div class="gantt-scroll" id="gantt-scroll">
+        <div class="gantt-chart" id="gantt-chart"></div>
+      </div>
+    </div>
+    <p class="pert-instructions">Drag a bar to move it · Drag its edges to change duration · Click to edit the details</p>
+    <div class="gantt-editor" id="gantt-editor"></div>
   </div>
 
   <!-- ═══════ PERT TAB ═══════ -->
@@ -856,9 +1051,71 @@ const PERT_EDGES = [
   { from: "first_meeting",    to: "sustain" },
 ];
 
+// ── Timeline / Gantt Definition ─────────────────────────────────────────
+// Palette validated for the dark surface (#100A08): worst adjacent CVD ΔE 9.4,
+// normal-vision ΔE 19.3, all steps >= 3:1 contrast. Phase order is load-bearing —
+// re-ordering these breaks the adjacent-pair separation. Milestones are
+// shape-encoded (diamond), so they are not a categorical slot.
+const PHASES = [
+  { id: "registration", label: "Registration · critical path", color: "#d95926" },
+  { id: "marketing",    label: "Marketing & Recruitment",      color: "#199e70" },
+  { id: "programming",  label: "Programming & Content",        color: "#3987e5" },
+  { id: "funding",      label: "Funding & Space",              color: "#c98500" },
+  { id: "app",          label: "PM App",                       color: "#d55181" },
+];
+
+// Dates are a first draft, scheduled backward from the Sept 10 Involvement Fair
+// and forward from Aug 20. The SGA review window is a guess — Campus Life has not
+// confirmed a turnaround, so everything downstream of it moves once they reply.
+const DEFAULT_TASKS = [
+  // ── Registration (critical path) ──
+  { id:"g_identity",   phase:"registration", label:"Define identity (name, purpose, mission, scope)", start:"2026-08-20", end:"2026-08-26" },
+  { id:"g_turnaround", phase:"registration", label:"Email Campus Life re: approval turnaround",       start:"2026-08-20", end:"2026-08-24" },
+  { id:"g_advisor",    phase:"registration", label:"Confirm faculty/staff advisor",                   start:"2026-08-21", end:"2026-09-04" },
+  { id:"g_officers",   phase:"registration", label:"Fill 4 officer roles",                            start:"2026-08-24", end:"2026-09-02" },
+  { id:"g_charter",    phase:"registration", label:"Recruit 10 charter members (names + CWIDs)",      start:"2026-08-24", end:"2026-09-07" },
+  { id:"g_constitution",phase:"registration",label:"Draft constitution",                              start:"2026-08-26", end:"2026-09-04" },
+  { id:"g_submit",     phase:"registration", label:"Submit registration via CampusLink",              start:"2026-09-07", end:"2026-09-08" },
+  { id:"g_review",     phase:"registration", label:"SGA review window",                               start:"2026-09-08", end:"2026-09-29", estimate:true, note:"Duration unconfirmed — Campus Life has not given a turnaround. Everything after this shifts with it." },
+  { id:"g_approved",   phase:"registration", label:"SGA APPROVAL (target)",                           start:"2026-09-29", end:"2026-09-29", milestone:true },
+  { id:"g_cl_page",    phase:"registration", label:"Create CampusLink page (30-day deadline)",        start:"2026-09-29", end:"2026-10-16" },
+
+  // ── Marketing & Recruitment ──
+  { id:"g_network",    phase:"marketing",    label:"Personal-network recruiting push",                start:"2026-08-20", end:"2026-09-07" },
+  { id:"g_flyers",     phase:"marketing",    label:"Design flyers, banner, tabling materials",        start:"2026-08-24", end:"2026-09-04" },
+  { id:"g_digital",    phase:"marketing",    label:"Email list, Instagram, GroupMe/Discord",          start:"2026-08-24", end:"2026-09-08" },
+  { id:"g_fair",       phase:"marketing",    label:"FALL INVOLVEMENT FAIR",                           start:"2026-09-10", end:"2026-09-10", milestone:true },
+  { id:"g_followup",   phase:"marketing",    label:"Follow up with fair signups",                     start:"2026-09-11", end:"2026-09-18" },
+
+  // ── Programming & Content ──
+  { id:"g_cadence",    phase:"programming",  label:"Decide meeting cadence + day/time",               start:"2026-08-31", end:"2026-09-04" },
+  { id:"g_calendar",   phase:"programming",  label:"Build semester content calendar",                 start:"2026-08-31", end:"2026-09-18" },
+  { id:"g_template",   phase:"programming",  label:"Draft speaker outreach email template",           start:"2026-09-14", end:"2026-09-16" },
+  { id:"g_speakers",   phase:"programming",  label:"Speaker outreach — Tier 5/6",                     start:"2026-09-14", end:"2026-10-16" },
+  { id:"g_workshop",   phase:"programming",  label:"Design builder workshop (Apify + Composio)",      start:"2026-09-21", end:"2026-10-09" },
+  { id:"g_library",    phase:"programming",  label:"Maintain Learning resource library (ongoing)",    start:"2026-08-31", end:"2026-12-11" },
+  { id:"g_meeting1",   phase:"programming",  label:"FIRST GENERAL MEETING",                           start:"2026-10-13", end:"2026-10-13", milestone:true },
+
+  // ── Funding & Space ──
+  { id:"g_budget",     phase:"funding",      label:"Estimate first-semester budget",                  start:"2026-09-14", end:"2026-09-18" },
+  { id:"g_room",       phase:"funding",      label:"Reserve recurring meeting room",                  start:"2026-09-29", end:"2026-10-06" },
+  { id:"g_afap",       phase:"funding",      label:"Apply for SGA/AFAP funding",                      start:"2026-09-29", end:"2026-10-09" },
+
+  // ── PM App ──
+  { id:"g_mvp",        phase:"app",          label:"Define PM app MVP scope",                         start:"2026-08-19", end:"2026-08-20" },
+  { id:"g_v1",         phase:"app",          label:"TRACKER v1 LIVE",                                 start:"2026-08-20", end:"2026-08-20", milestone:true },
+  { id:"g_migrate",    phase:"app",          label:"Migrate speaker tracking into app",               start:"2026-09-21", end:"2026-09-25" },
+  { id:"g_iterate",    phase:"app",          label:"Iterate on officer feedback",                     start:"2026-08-21", end:"2026-10-16" },
+];
+
 // ── State ───────────────────────────────────────────────────────────────
 let state = {};
 let db    = null;
+let tasks = null;
+let selectedTask = null;
+let ganttDragging = false;
+const DAY_W  = 13;
+const DAY_MS = 86400000;
 let pertReady = false;
 let visNodes  = null;
 
@@ -879,12 +1136,22 @@ if (IS_CONFIGURED) {
         setSyncStatus('offline');
         console.error(err);
       });
+    db.collection('ossai').doc('schedule')
+      .onSnapshot(snap => {
+        const d = snap.data();
+        tasks = (d && Array.isArray(d.tasks) && d.tasks.length) ? d.tasks : cloneDefaults();
+        if (!ganttDragging) renderGantt();
+      }, err => {
+        setSyncStatus('offline');
+        console.error(err);
+      });
   } catch(e) {
     setSyncStatus('offline');
     console.error(e);
   }
 } else {
   setSyncStatus('offline');
+  tasks = cloneDefaults();
   refresh();
 }
 
@@ -968,6 +1235,16 @@ function switchTab(name, btn) {
   document.getElementById('tab-' + name).classList.add('active');
   btn.classList.add('active');
   if (name === 'pert' && !pertReady) initPert();
+  if (name === 'gantt') {
+    if (!tasks) tasks = cloneDefaults();
+    renderGantt();
+    // land the viewport on today rather than the far-left edge
+    const sc = document.getElementById('gantt-scroll');
+    const now = new Date();
+    const todayMs = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+    const { lo } = chartBounds();
+    if (sc) sc.scrollLeft = Math.max(0, dayDiff(lo, todayMs) * DAY_W - 120);
+  }
 }
 
 // ── PERT Helpers ─────────────────────────────────────────────────────────
@@ -1055,6 +1332,321 @@ function updatePertColors() {
       font:  { color: c.font, size: 13 },
     };
   }));
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  GANTT / TIMELINE
+// ══════════════════════════════════════════════════════════════════════
+
+// ── Date helpers (UTC throughout, so no timezone drift) ─────────────────
+function pd(s)  { const p = String(s).split('-').map(Number); return Date.UTC(p[0], p[1]-1, p[2]); }
+function fd(ms) { return new Date(ms).toISOString().slice(0,10); }
+function dayDiff(a, b) { return Math.round((b - a) / DAY_MS); }
+function addDays(ms, n) { return ms + n * DAY_MS; }
+function phaseOf(id) { return PHASES.find(p => p.id === id) || PHASES[PHASES.length-1]; }
+function cloneDefaults() { return DEFAULT_TASKS.map(t => ({ ...t })); }
+
+function prettyDate(s) {
+  const d = new Date(pd(s));
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', timeZone:'UTC' });
+}
+
+// ── Chart bounds ────────────────────────────────────────────────────────
+function chartBounds() {
+  const list = tasks && tasks.length ? tasks : DEFAULT_TASKS;
+  let lo = Infinity, hi = -Infinity;
+  list.forEach(t => {
+    const s = pd(t.start), e = pd(t.end);
+    if (s < lo) lo = s;
+    if (e > hi) hi = e;
+  });
+  // pad, then snap the start back to a Monday so week ticks line up
+  lo = addDays(lo, -3);
+  const dow = new Date(lo).getUTCDay();          // 0=Sun
+  lo = addDays(lo, -((dow + 6) % 7));
+  hi = addDays(hi, 6);
+  return { lo, hi, days: dayDiff(lo, hi) + 1 };
+}
+
+// ── Render ──────────────────────────────────────────────────────────────
+function renderGantt() {
+  const labelsEl = document.getElementById('gantt-labels');
+  const chartEl  = document.getElementById('gantt-chart');
+  if (!labelsEl || !chartEl || !tasks) return;
+
+  const { lo, days } = chartBounds();
+  const width = days * DAY_W;
+
+  // legend
+  const legend = document.getElementById('gantt-legend');
+  if (legend) {
+    legend.innerHTML = PHASES.map(p =>
+      `<span class="glg"><span class="glg-swatch" style="background:${p.color}"></span>${p.label}</span>`
+    ).join('') + `<span class="glg"><span class="glg-swatch milestone"></span>Milestone</span>`;
+  }
+
+  // ── header ──
+  let head = '';
+  let m = lo;
+  while (m <= addDays(lo, days - 1)) {
+    const d  = new Date(m);
+    const my = d.getUTCFullYear(), mo = d.getUTCMonth();
+    const monthStart = Date.UTC(my, mo, 1);
+    const nextMonth  = Date.UTC(my, mo + 1, 1);
+    const from = Math.max(monthStart, lo);
+    const to   = Math.min(nextMonth, addDays(lo, days));
+    const x    = dayDiff(lo, from) * DAY_W;
+    const w    = dayDiff(from, to) * DAY_W;
+    head += `<div class="gmonth" style="left:${x}px;width:${w}px">${d.toLocaleDateString('en-US',{month:'long',timeZone:'UTC'})}</div>`;
+    m = nextMonth;
+  }
+  for (let i = 0; i < days; i += 7) {
+    head += `<div class="gweek" style="left:${i*DAY_W}px;width:${7*DAY_W}px">${prettyDate(fd(addDays(lo,i)))}</div>`;
+  }
+
+  // ── background columns ──
+  let cols = '';
+  for (let i = 0; i < days; i++) {
+    const dow = new Date(addDays(lo, i)).getUTCDay();
+    if (dow === 0 || dow === 6) cols += `<div class="gcol weekend" style="left:${i*DAY_W}px;width:${DAY_W}px"></div>`;
+    if (dow === 1)              cols += `<div class="gcol" style="left:${i*DAY_W}px"></div>`;
+    if (new Date(addDays(lo,i)).getUTCDate() === 1) cols += `<div class="gcol month" style="left:${i*DAY_W}px"></div>`;
+  }
+
+  // today marker
+  const now = new Date();
+  const todayMs = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  let todayEl = '';
+  if (todayMs >= lo && todayMs <= addDays(lo, days)) {
+    todayEl = `<div class="gtoday" style="left:${dayDiff(lo,todayMs)*DAY_W}px"></div>`;
+  }
+
+  // ── rows ──
+  let labelRows = `<div class="grow-head">Task</div>`;
+  let chartRows = '';
+
+  PHASES.forEach(p => {
+    const inPhase = tasks.filter(t => t.phase === p.id);
+    if (!inPhase.length) return;
+    labelRows += `<div class="gphase" style="color:${p.color}">${p.label}</div>`;
+    chartRows += `<div class="gphase"></div>`;
+
+    inPhase.forEach(t => {
+      const sel = selectedTask === t.id ? ' sel' : '';
+      labelRows += `<div class="grow${sel}" onclick="selectTask('${t.id}')" title="${escAttr(t.label)}"><span>${escHtml(t.label)}</span></div>`;
+
+      const s = pd(t.start), e = pd(t.end);
+      const x = dayDiff(lo, s) * DAY_W;
+      if (t.milestone) {
+        chartRows += `<div class="grow"><div class="gmile${sel}" data-id="${t.id}" style="left:${x + DAY_W/2}px"></div></div>`;
+      } else {
+        const w = Math.max(dayDiff(s, e) + 1, 1) * DAY_W;
+        chartRows += `<div class="grow"><div class="gbar${sel}${t.estimate ? ' gbar-est' : ''}" data-id="${t.id}" `
+                  +  `style="left:${x}px;width:${w}px;background-color:${p.color}">`
+                  +  `<div class="ghandle l"></div><div class="ghandle r"></div></div></div>`;
+      }
+    });
+  });
+
+  labelsEl.innerHTML = labelRows;
+  chartEl.style.width = width + 'px';
+  chartEl.innerHTML = `<div class="grow-head">${head}</div>`
+                    + `<div style="position:relative">${cols}${todayEl}${chartRows}</div>`;
+
+  wireGanttDrag();
+  renderGanttEditor();
+}
+
+function escHtml(s){ return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function escAttr(s){ return escHtml(s).replace(/"/g,'&quot;'); }
+
+// ── Drag to move / resize ───────────────────────────────────────────────
+function wireGanttDrag() {
+  document.querySelectorAll('#gantt-chart .gbar, #gantt-chart .gmile').forEach(el => {
+    el.addEventListener('pointerdown', ev => {
+      ev.preventDefault();
+      const id   = el.dataset.id;
+      const t    = tasks.find(x => x.id === id);
+      if (!t) return;
+
+      const mode = ev.target.classList.contains('ghandle')
+                 ? (ev.target.classList.contains('l') ? 'l' : 'r')
+                 : 'move';
+      const x0 = ev.clientX;
+      const s0 = pd(t.start), e0 = pd(t.end);
+      let moved = false;
+
+      el.setPointerCapture(ev.pointerId);
+      el.classList.add('dragging');
+      ganttDragging = true;
+
+      const onMove = e2 => {
+        const dx = Math.round((e2.clientX - x0) / DAY_W);
+        if (Math.abs(e2.clientX - x0) > 3) moved = true;
+        if (!dx && !moved) return;
+        if (mode === 'move') { t.start = fd(addDays(s0, dx)); t.end = fd(addDays(e0, dx)); }
+        if (mode === 'l')    { const ns = Math.min(addDays(s0, dx), e0); t.start = fd(ns); }
+        if (mode === 'r')    { const ne = Math.max(addDays(e0, dx), s0); t.end   = fd(ne); }
+        paintBar(el, t);
+      };
+
+      const onUp = () => {
+        el.removeEventListener('pointermove', onMove);
+        el.removeEventListener('pointerup', onUp);
+        el.classList.remove('dragging');
+        ganttDragging = false;
+        if (moved) { saveSchedule(); }
+        else       { selectTask(id); }
+      };
+
+      el.addEventListener('pointermove', onMove);
+      el.addEventListener('pointerup', onUp);
+    });
+
+    el.addEventListener('pointerenter', ev => showGanttTip(ev, el.dataset.id));
+    el.addEventListener('pointerleave', hideGanttTip);
+  });
+}
+
+function paintBar(el, t) {
+  const { lo } = chartBounds();
+  const s = pd(t.start), e = pd(t.end);
+  const x = dayDiff(lo, s) * DAY_W;
+  if (t.milestone) { el.style.left = (x + DAY_W/2) + 'px'; }
+  else {
+    el.style.left  = x + 'px';
+    el.style.width = Math.max(dayDiff(s, e) + 1, 1) * DAY_W + 'px';
+  }
+}
+
+// ── Tooltip ─────────────────────────────────────────────────────────────
+let tipEl = null;
+function showGanttTip(ev, id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+  if (!tipEl) { tipEl = document.createElement('div'); tipEl.className = 'gtip'; document.body.appendChild(tipEl); }
+  const days = dayDiff(pd(t.start), pd(t.end)) + 1;
+  tipEl.innerHTML = `<b>${escHtml(t.label)}</b>`
+    + `<span class="gtip-meta">${prettyDate(t.start)}`
+    + (t.milestone ? '' : ` → ${prettyDate(t.end)} · ${days} day${days===1?'':'s'}`)
+    + `</span>`
+    + (t.note ? `<div style="margin-top:.35rem;color:var(--text-mid)">${escHtml(t.note)}</div>` : '');
+  tipEl.style.left = Math.min(ev.clientX + 14, window.innerWidth - 300) + 'px';
+  tipEl.style.top  = (ev.clientY + 16) + 'px';
+  tipEl.classList.add('on');
+}
+function hideGanttTip() { if (tipEl) tipEl.classList.remove('on'); }
+
+// ── Select + edit ───────────────────────────────────────────────────────
+function selectTask(id) {
+  selectedTask = (selectedTask === id) ? null : id;
+  renderGantt();
+  if (selectedTask) {
+    const ed = document.getElementById('gantt-editor');
+    if (ed) ed.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+}
+
+function renderGanttEditor() {
+  const ed = document.getElementById('gantt-editor');
+  if (!ed) return;
+  const t = tasks.find(x => x.id === selectedTask);
+  if (!t) { ed.classList.remove('on'); ed.innerHTML = ''; return; }
+  ed.classList.add('on');
+  ed.innerHTML = `
+    <div class="ged-title">Editing task</div>
+    <div class="ged-grid">
+      <div class="ged-field grow-wide">
+        <label>Label</label>
+        <input type="text" id="ged-label" value="${escAttr(t.label)}">
+      </div>
+      <div class="ged-field">
+        <label>Phase</label>
+        <select id="ged-phase">
+          ${PHASES.map(p => `<option value="${p.id}"${p.id===t.phase?' selected':''}>${p.label}</option>`).join('')}
+        </select>
+      </div>
+      <div class="ged-field">
+        <label>Start</label>
+        <input type="date" id="ged-start" value="${t.start}">
+      </div>
+      <div class="ged-field">
+        <label>${t.milestone ? 'End (locked)' : 'End'}</label>
+        <input type="date" id="ged-end" value="${t.end}"${t.milestone?' disabled':''}>
+      </div>
+      <div class="ged-field">
+        <label>Milestone</label>
+        <select id="ged-milestone">
+          <option value="no"${t.milestone?'':' selected'}>Bar</option>
+          <option value="yes"${t.milestone?' selected':''}>Diamond</option>
+        </select>
+      </div>
+      <div class="ged-actions">
+        <button class="gantt-btn" onclick="applyTaskEdit()">Save</button>
+        <button class="gantt-btn ghost" onclick="deleteTask()">Delete</button>
+      </div>
+    </div>
+    <p class="ged-hint">Changes sync to everyone on the site the moment you hit Save.</p>
+  `;
+}
+
+function applyTaskEdit() {
+  const t = tasks.find(x => x.id === selectedTask);
+  if (!t) return;
+  const label = document.getElementById('ged-label').value.trim();
+  const start = document.getElementById('ged-start').value;
+  let   end   = document.getElementById('ged-end').value;
+  const mile  = document.getElementById('ged-milestone').value === 'yes';
+
+  if (!label || !start) return;
+  if (mile) end = start;
+  if (!end) end = start;
+  if (pd(end) < pd(start)) end = start;   // never let end precede start
+
+  t.label     = label;
+  t.phase     = document.getElementById('ged-phase').value;
+  t.start     = start;
+  t.end       = end;
+  if (mile) t.milestone = true; else delete t.milestone;
+
+  saveSchedule();
+}
+
+function deleteTask() {
+  const i = tasks.findIndex(x => x.id === selectedTask);
+  if (i < 0) return;
+  tasks.splice(i, 1);
+  selectedTask = null;
+  saveSchedule();
+}
+
+function addGanttTask() {
+  const now = new Date();
+  const today = fd(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const id = 'g_' + Date.now().toString(36);
+  tasks.push({ id, phase:'registration', label:'New task', start: today, end: fd(addDays(pd(today), 6)) });
+  selectedTask = id;
+  saveSchedule();
+}
+
+function resetSchedule() {
+  tasks = cloneDefaults();
+  selectedTask = null;
+  saveSchedule();
+}
+
+// ── Persist ─────────────────────────────────────────────────────────────
+async function saveSchedule() {
+  renderGantt();
+  if (!db) return;
+  setSyncStatus('syncing');
+  try {
+    await db.collection('ossai').doc('schedule').set({ tasks }, { merge: true });
+    setSyncStatus('live');
+  } catch(e) {
+    setSyncStatus('offline');
+    console.error(e);
+  }
 }
 
 // ── Sync Badge ───────────────────────────────────────────────────────────
