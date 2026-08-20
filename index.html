@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OSSAI | Oklahoma State Society of Artificial Intelligence</title>
+
+  <!-- Firebase compat CDN (v10) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <!-- vis.js for PERT network -->
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:           #08050A;
+      --surface:      #100A08;
+      --surface-2:    #180E09;
+      --surface-3:    #23150B;
+      --border:       rgba(255,115,0,.14);
+      --border-mid:   rgba(255,115,0,.28);
+      --border-bright:rgba(255,115,0,.55);
+      --accent:       #FF7300;
+      --accent-bright:#FF9A44;
+      --accent-dim:   #7A3600;
+      --accent-glow:  rgba(255,115,0,.2);
+      --white:        #FFFFFF;
+      --text:         #FFF3E8;
+      --text-mid:     #AC9A88;
+      --text-dim:     #60503E;
+      --grey:         #2A1F16;
+      --grey-light:   #E0D2C4;
+      --complete:     #FFC48A;
+      --complete-glow:rgba(255,196,138,.2);
+      --red:          #F87171;
+      --shadow:       0 0 40px rgba(255,115,0,.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse 80% 40% at 50% -10%, rgba(255,115,0,.08) 0%, transparent 70%),
+        linear-gradient(rgba(255,115,0,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,115,0,.03) 1px, transparent 1px);
+      background-size: 100% 100%, 48px 48px, 48px 48px;
+    }
+
+    /* ── Setup Overlay ─────────────────────────── */
+    #setup-overlay {
+      position: fixed; inset: 0;
+      background: rgba(8,5,10,.97);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem;
+    }
+    #setup-overlay.hidden { display: none; }
+
+    .setup-card {
+      background: var(--surface);
+      border: 1px solid var(--border-mid);
+      border-radius: 20px;
+      padding: 2.5rem; max-width: 660px; width: 100%;
+      box-shadow: 0 0 60px var(--accent-glow), 0 32px 64px rgba(0,0,0,.7);
+      position: relative; overflow: hidden;
+    }
+    .setup-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+    .setup-card h2 {
+      color: var(--text); font-size: 1.4rem; font-weight: 800;
+      letter-spacing: -.02em; margin-bottom: .6rem;
+    }
+    .setup-card .subtitle { color: var(--text-mid); margin-bottom: 1.5rem; line-height: 1.7; font-size: .93rem; }
+    .setup-card ol { padding-left: 1.3rem; color: var(--text-mid); line-height: 2.2; margin-bottom: 1rem; font-size: .92rem; }
+    .setup-card a { color: var(--accent-bright); font-weight: 600; text-decoration: none; }
+    .setup-card a:hover { color: var(--white); }
+    .setup-card code {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 5px; padding: 1px 7px;
+      font-family: 'Space Mono', monospace; font-size: .82em; color: var(--accent-bright);
+    }
+    .config-block {
+      background: #050206; color: var(--accent-bright);
+      border: 1px solid var(--border-mid);
+      border-radius: 12px; padding: 1.1rem 1.4rem;
+      font-family: 'Space Mono', monospace; font-size: .8rem; line-height: 2;
+      margin: 1rem 0; overflow-x: auto; white-space: pre;
+    }
+    .setup-note { font-size: .82rem; color: var(--text-dim); margin-top: .75rem; line-height: 1.65; }
+
+    /* ── Header ────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 2.5rem;
+      display: flex; align-items: center; gap: 1.5rem;
+      flex-wrap: wrap; position: relative; overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent 0%, var(--accent) 40%, var(--accent-bright) 60%, transparent 100%);
+      opacity: .6;
+    }
+    header::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 100% at 20% 50%, rgba(255,115,0,.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .header-logo {
+      width: 54px; height: 54px;
+      background: var(--surface-3);
+      border: 1px solid var(--border-mid);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .95rem; font-weight: 800; color: var(--accent-bright);
+      flex-shrink: 0; position: relative; z-index: 1;
+      box-shadow: 0 0 20px var(--accent-glow);
+      font-family: 'Space Mono', monospace;
+      letter-spacing: -.03em;
+    }
+    .header-text { position: relative; z-index: 1; }
+    .header-text h1 {
+      font-size: 1.6rem; font-weight: 800;
+      letter-spacing: -.03em; color: var(--white);
+    }
+    .header-text h1 span { color: var(--accent-bright); }
+    .header-text p { font-size: .82rem; color: var(--text-mid); margin-top: 4px; letter-spacing: .01em; }
+    .header-badge {
+      margin-left: auto; position: relative; z-index: 1;
+      background: var(--surface-3);
+      border: 1px solid var(--border-mid);
+      color: var(--accent-bright);
+      padding: .45rem 1.1rem; border-radius: 8px;
+      font-weight: 700; font-size: .82rem; white-space: nowrap;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: .02em;
+    }
+
+    /* ── Progress Bar ──────────────────────────── */
+    .progress-wrap {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: .7rem 2.5rem;
+      display: flex; align-items: center; gap: 1.25rem;
+    }
+    .progress-label {
+      color: var(--text-dim); font-size: .75rem; white-space: nowrap;
+      min-width: 120px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .08em;
+      font-family: 'Space Mono', monospace;
+    }
+    .progress-track {
+      flex: 1; height: 4px;
+      background: var(--grey);
+      border-radius: 2px; overflow: visible; position: relative;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-dim) 0%, var(--accent) 50%, var(--accent-bright) 100%);
+      border-radius: 2px; transition: width .5s cubic-bezier(.4,0,.2,1);
+      box-shadow: 0 0 12px var(--accent-glow), 0 0 24px var(--accent-glow);
+      position: relative;
+    }
+    .progress-fill::after {
+      content: '';
+      position: absolute; right: -1px; top: 50%;
+      transform: translateY(-50%);
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent-bright);
+      box-shadow: 0 0 8px var(--accent), 0 0 16px var(--accent-glow);
+    }
+    .progress-pct {
+      color: var(--accent-bright); font-weight: 700; font-size: .82rem;
+      width: 38px; text-align: right;
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* ── Tab Nav ───────────────────────────────── */
+    .tab-nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2.5rem;
+      display: flex; gap: 0; flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: .85rem 1.4rem; border: none; background: none;
+      font-size: .83rem; font-weight: 600; color: var(--text-dim);
+      cursor: pointer; border-bottom: 1px solid transparent;
+      margin-bottom: -1px; transition: all .2s;
+      font-family: inherit; letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active {
+      color: var(--accent-bright);
+      border-bottom-color: var(--accent);
+      text-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    /* ── Tab Content ───────────────────────────── */
+    .tab-content { display: none; padding: 2rem 2.5rem; max-width: 1100px; margin: 0 auto; }
+    .tab-content.active { display: block; }
+
+    /* ── Plan Cards ────────────────────────────── */
+    .plan-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.75rem 2rem; margin-bottom: 1.1rem;
+      transition: border-color .25s, box-shadow .25s;
+      position: relative; overflow: hidden;
+    }
+    .plan-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; bottom: 0; width: 2px;
+      background: linear-gradient(180deg, var(--accent) 0%, transparent 100%);
+      opacity: 0; transition: opacity .25s;
+    }
+    .plan-card:hover { border-color: var(--border-mid); box-shadow: var(--shadow); }
+    .plan-card:hover::before { opacity: 1; }
+    .plan-card h2 {
+      color: var(--white); font-size: 1rem; font-weight: 700;
+      letter-spacing: .02em; text-transform: uppercase;
+      display: flex; align-items: center; gap: .75rem;
+      padding-bottom: .8rem; margin-bottom: 1.1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .plan-card h3 {
+      color: var(--accent-bright); margin: 1.1rem 0 .5rem;
+      font-size: .85rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    .plan-card p  { line-height: 1.8; color: var(--text-mid); margin-bottom: .7rem; font-size: .91rem; }
+    .plan-card ul, .plan-card ol { padding-left: 1.4rem; color: var(--text-mid); line-height: 2; font-size: .91rem; }
+    .plan-card li { margin-bottom: .1rem; }
+    .plan-card strong { color: var(--text); }
+
+    .plan-table { width: 100%; border-collapse: collapse; margin: .75rem 0; font-size: .87rem; }
+    .plan-table th {
+      background: var(--surface-2); color: var(--text-dim);
+      padding: .65rem 1rem; text-align: left;
+      font-weight: 700; font-size: .72rem;
+      text-transform: uppercase; letter-spacing: .08em;
+      border-bottom: 1px solid var(--border);
+      font-family: 'Space Mono', monospace;
+    }
+    .plan-table td { padding: .75rem 1rem; border-bottom: 1px solid var(--border); color: var(--text-mid); }
+    .plan-table tr:last-child td { border-bottom: none; }
+    .plan-table tr:hover td { background: rgba(255,115,0,.04); color: var(--text); }
+    .plan-table td strong { color: var(--text); }
+
+    .highlight {
+      background: rgba(255,115,0,.15);
+      color: var(--accent-bright);
+      border: 1px solid var(--border-mid);
+      padding: .1rem .55rem; border-radius: 5px; font-weight: 700;
+      font-family: 'Space Mono', monospace; font-size: .88em;
+    }
+    .alert-box {
+      background: rgba(255,115,0,.05);
+      border: 1px solid var(--border-mid);
+      border-left: 2px solid var(--accent);
+      padding: 1rem 1.25rem; border-radius: 0 10px 10px 0;
+      margin: 1rem 0; color: var(--text-mid); line-height: 1.75; font-size: .9rem;
+    }
+    .alert-box strong { color: var(--accent-bright); }
+    .open-item {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--text-dim);
+      padding: .75rem 1rem; border-radius: 0 10px 10px 0;
+      margin: .5rem 0; font-size: .89rem; color: var(--text-mid); line-height: 1.6;
+    }
+    .open-item strong { color: var(--text); }
+    .blocked-tag {
+      display: inline-block;
+      background: rgba(248,113,113,.1);
+      border: 1px solid rgba(248,113,113,.3);
+      color: var(--red);
+      padding: .05rem .5rem; border-radius: 4px;
+      font-size: .7rem; font-weight: 700;
+      font-family: 'Space Mono', monospace;
+      text-transform: uppercase; letter-spacing: .05em;
+      margin-left: .4rem; vertical-align: middle;
+    }
+
+    /* ── Checklist ─────────────────────────────── */
+    .checklist-group {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px; margin-bottom: 1rem; overflow: hidden;
+      transition: border-color .2s;
+    }
+    .checklist-group:hover { border-color: var(--border-mid); }
+    .group-header {
+      background: var(--surface-2);
+      padding: .85rem 1.25rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; user-select: none; transition: background .15s;
+      border-bottom: 1px solid var(--border);
+    }
+    .group-header:hover { background: rgba(255,115,0,.08); }
+    .group-header-left {
+      display: flex; align-items: center; gap: .7rem;
+      color: var(--text); font-size: .88rem;
+      text-transform: uppercase; letter-spacing: .05em;
+    }
+    .group-badge {
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      border-radius: 6px; padding: .1rem .6rem;
+      font-size: .72rem; font-weight: 700; color: var(--text-dim);
+      font-family: 'Space Mono', monospace;
+    }
+    .group-badge.done {
+      background: rgba(255,196,138,.1);
+      border-color: rgba(255,196,138,.25);
+      color: var(--complete);
+    }
+    .group-deadline {
+      font-size: .68rem; color: var(--text-dim);
+      font-family: 'Space Mono', monospace;
+      text-transform: none; letter-spacing: .02em;
+    }
+    .group-chevron { font-size: .6rem; color: var(--text-dim); transition: transform .25s; }
+    .group-chevron.open { transform: rotate(90deg); }
+    .group-items.collapsed { display: none; }
+
+    .check-item {
+      display: flex; align-items: flex-start; gap: 1rem;
+      padding: .85rem 1.25rem;
+      border-bottom: 1px solid rgba(255,115,0,.06);
+      cursor: pointer; transition: background .12s;
+    }
+    .check-item:last-child { border-bottom: none; }
+    .check-item:hover { background: rgba(255,115,0,.05); }
+    .check-item.done .item-label { text-decoration: line-through; color: var(--text-dim); }
+    .check-item input[type="checkbox"] {
+      width: 15px; height: 15px; margin-top: 3px;
+      flex-shrink: 0; accent-color: var(--accent); cursor: pointer;
+    }
+    .item-label { font-size: .89rem; line-height: 1.65; color: var(--text-mid); }
+    .check-item:hover .item-label { color: var(--text); }
+    .check-item.done { opacity: .6; }
+
+    /* ── PERT Tab ──────────────────────────────── */
+    .pert-legend {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: .85rem 1.5rem; margin-bottom: 1.1rem;
+      display: flex; align-items: center; flex-wrap: wrap; gap: 1.5rem;
+    }
+    .pert-legend strong {
+      color: var(--text-dim); font-size: .7rem;
+      text-transform: uppercase; letter-spacing: .1em;
+      font-family: 'Space Mono', monospace;
+    }
+    .legend-item { display: flex; align-items: center; gap: .5rem; font-size: .8rem; color: var(--text-mid); }
+    .ldot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .ldot.complete  { background: var(--complete);  box-shadow: 0 0 6px var(--complete-glow); }
+    .ldot.ready     { background: var(--accent-bright); box-shadow: 0 0 6px var(--accent-glow); }
+    .ldot.waiting   { background: var(--text-dim); }
+    .ldot.milestone { background: var(--white); border-radius: 3px; }
+
+    #pert-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: .75rem; height: 580px;
+      position: relative; overflow: hidden;
+    }
+    #pert-network { width: 100%; height: 100%; }
+    .pert-instructions {
+      font-size: .72rem; color: var(--text-dim);
+      text-align: center; margin-top: .6rem;
+      font-family: 'Space Mono', monospace; letter-spacing: .04em;
+    }
+
+    /* ── Sync Badge ────────────────────────────── */
+    .sync-badge {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: .45rem 1rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,.5);
+      display: flex; align-items: center; gap: .5rem;
+      font-size: .72rem; color: var(--text-dim); z-index: 200;
+      font-family: 'Space Mono', monospace; letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .sdot { width: 6px; height: 6px; border-radius: 50%; background: var(--complete); box-shadow: 0 0 5px var(--complete); }
+    .sdot.syncing { background: var(--accent-bright); box-shadow: 0 0 5px var(--accent); animation: blink 1s infinite; }
+    .sdot.offline { background: var(--red); box-shadow: 0 0 5px var(--red); }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+    /* ── Scrollbar ─────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
+
+    @media (max-width: 600px) {
+      header { padding: 1.1rem 1.25rem; }
+      .header-badge { margin-left: 0; }
+      .tab-content { padding: 1rem 1.25rem; }
+      .tab-nav { padding: 0 1rem; }
+      .tab-btn { padding: .7rem .7rem; font-size: .72rem; }
+      #pert-wrap { height: 360px; }
+      .plan-card { padding: 1.25rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     SETUP OVERLAY — hidden once Firebase is configured
+═══════════════════════════════════════════════ -->
+<div id="setup-overlay">
+  <div class="setup-card">
+    <h2>⚙️ One-Time Firebase Setup</h2>
+    <p class="subtitle">OSSAI uses a free Firebase database so every officer sees live checklist updates. Takes about 5 minutes — only one person needs to do this.</p>
+    <ol>
+      <li>Go to <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> and sign in with a Google account</li>
+      <li>Click <strong>Add Project</strong> → name it <code>ossai</code> → disable Google Analytics → Create Project</li>
+      <li>In the left sidebar, click <strong>Firestore Database</strong> → <strong>Create database</strong> → choose <strong>Start in test mode</strong> → select <em>us-central1</em> → Enable</li>
+      <li>Click the ⚙️ gear icon (top-left) → <strong>Project settings</strong> → scroll to <strong>Your apps</strong> → click the <code>&lt;/&gt;</code> web icon → register app (any nickname) → copy the <code>firebaseConfig</code> shown</li>
+      <li>Open <code>index.html</code> and replace the placeholder config block near the top of the <code>&lt;script&gt;</code> section with your copied config, then re-deploy to GitHub Pages</li>
+    </ol>
+    <div class="config-block">// Find this block and replace it:
+const firebaseConfig = {
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId:         "YOUR_PROJECT_ID",
+  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId:             "YOUR_APP_ID"
+};</div>
+    <p class="setup-note">Test mode leaves the database open to anyone who has the URL. Before sharing this site widely, tighten the Firestore security rules.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MAIN APP
+═══════════════════════════════════════════════ -->
+<div id="app">
+
+  <header>
+    <div class="header-logo">OSSAI</div>
+    <div class="header-text">
+      <h1>Oklahoma State Society of <span>Artificial Intelligence</span></h1>
+      <p>Oklahoma State University &nbsp;·&nbsp; Founding &amp; Registration Tracker</p>
+    </div>
+    <div class="header-badge">🎪 Fair: Sept 10, 2026</div>
+  </header>
+
+  <div class="progress-wrap">
+    <span class="progress-label">Overall Progress</span>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <span class="progress-pct" id="progress-pct">0%</span>
+  </div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active"  onclick="switchTab('plan',this)">📋 Plan</button>
+    <button class="tab-btn"         onclick="switchTab('checklist',this)">✅ Checklist</button>
+    <button class="tab-btn"         onclick="switchTab('pert',this)">📊 PERT Chart</button>
+    <button class="tab-btn"         onclick="switchTab('curriculum',this)">🎓 Curriculum</button>
+  </div>
+
+  <!-- ═══════ PLAN TAB ═══════ -->
+  <div id="tab-plan" class="tab-content active">
+
+    <div class="plan-card">
+      <h2>Organization Overview</h2>
+      <table class="plan-table">
+        <tr><th>Detail</th><th>Info</th></tr>
+        <tr><td><strong>Name</strong></td><td>Oklahoma State Society of Artificial Intelligence (OSSAI)</td></tr>
+        <tr><td><strong>Institution</strong></td><td>Oklahoma State University</td></tr>
+        <tr><td><strong>Status</strong></td><td><span class="highlight">Pre-registration — founding in progress</span></td></tr>
+        <tr><td><strong>Registering body</strong></td><td>OSU Student Government Association, via CampusLink</td></tr>
+        <tr><td><strong>Minimum to register</strong></td><td>4 officers + 10 charter members + 1 full-time faculty/staff advisor + constitution</td></tr>
+        <tr><td><strong>Nearest date</strong></td><td>Fall Involvement Fair — Sept 10, 2026</td></tr>
+      </table>
+      <div class="alert-box">
+        <strong>The critical path is registration.</strong> Funding, room booking, and an official fair table are all blocked until SGA approval lands, and the approval turnaround is currently unknown. Everything in Goal 1 should be treated as urgent; Goals 2–5 can run in parallel but cannot cash out until Goal 1 clears.
+      </div>
+    </div>
+
+    <div class="plan-card">
+      <h2>Goal 1 — Legal Foundation (Registration)</h2>
+      <h3>1.1 Define Identity <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);">— deadline: this week</span></h3>
+      <ul>
+        <li>Finalize club name</li>
+        <li>Write a 2–3 sentence purpose statement (SGA requires this)</li>
+        <li>Write mission statement</li>
+        <li>Decide the scope balance: AI safety/alignment content vs. practical builder/agentic content</li>
+      </ul>
+      <h3>1.2 Build the Founding Team <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);">— target: 2 weeks, before SGA submission</span></h3>
+      <ul>
+        <li>Fill 4 officer roles: President, VP, Treasurer, Secretary/Comms</li>
+        <li>Recruit 10 charter members — need full names <strong>and CWIDs</strong></li>
+        <li>Identify and confirm a full-time OSU faculty/staff advisor
+          <br><em>Separate from guest speakers — this needs an ongoing yes</em>
+        </li>
+      </ul>
+      <h3>1.3 Draft Governing Documents <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);">— parallel with 1.2</span></h3>
+      <ul>
+        <li>Check Campus Life for a constitution template <em>before</em> drafting from scratch</li>
+        <li>Write constitution: officer structure, membership rules, meeting cadence, amendment process</li>
+      </ul>
+      <h3>1.4 Submit &amp; Track SGA Approval <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);">— submit ASAP, do not wait</span></h3>
+      <ul>
+        <li>Submit registration via CampusLink</li>
+        <li>Email <strong>campuslife@okstate.edu</strong> to ask the actual approval turnaround (currently unknown)</li>
+      </ul>
+      <h3>1.5 Post-Approval Admin (recurring)</h3>
+      <ul>
+        <li>Create CampusLink page within 30 days of approval</li>
+        <li>Re-register every semester within the first 6 weeks</li>
+      </ul>
+    </div>
+
+    <div class="plan-card">
+      <h2>Goal 2 — Club Framework &amp; Programming</h2>
+      <h3>Meeting Logistics</h3>
+      <ul>
+        <li>Decide cadence (weekly/biweekly) and day/time</li>
+        <li>Reserve a recurring room <span class="blocked-tag">Blocked until registered</span></li>
+      </ul>
+      <h3>Content Pipeline</h3>
+      <ul>
+        <li>Build a semester content calendar mixing safety/alignment talks, builder workshops, and speakers</li>
+        <li>Maintain the "Learning" resource library — already started</li>
+      </ul>
+      <h3>Flagship Builder Workshop</h3>
+      <ul>
+        <li>Design the first live-build demo: an agent with <strong>"eyes"</strong> (Apify) and <strong>"hands"</strong> (Composio)</li>
+        <li>Decide whether this app itself becomes a second live-build demo</li>
+      </ul>
+      <h3>Speaker Outreach</h3>
+      <ul>
+        <li>Start with <strong>Tier 5/6</strong> — OSU faculty and local founders are the realistic first bookings</li>
+        <li>Draft a reusable outreach email template</li>
+        <li>Migrate contact-status tracking out of the spreadsheet and into this app</li>
+      </ul>
+    </div>
+
+    <div class="plan-card">
+      <h2>Goal 3 — Funding &amp; Space</h2>
+      <ul>
+        <li>Estimate the first-semester budget: room AV, food, speaker travel, marketing materials</li>
+        <li>Apply for SGA/AFAP funding <span class="blocked-tag">Blocked until registered</span></li>
+        <li>Book recurring meeting space <span class="blocked-tag">Blocked until registered</span></li>
+      </ul>
+    </div>
+
+    <div class="plan-card">
+      <h2>Goal 4 — Marketing &amp; Recruitment</h2>
+      <ul>
+        <li><strong>Fall Involvement Fair (Sept 10):</strong> informal table / signup sheet — no official listing until registered</li>
+        <li>Build digital presence: email list, Instagram, GroupMe/Discord</li>
+        <li>Design banner, flyers, and tabling materials</li>
+        <li>Personal-network push to hit the 10-charter-member minimum fast — fraternity, IISE, CEAT Scholars, classes</li>
+      </ul>
+    </div>
+
+    <div class="plan-card">
+      <h2>Goal 5 — Build the PM App (meta)</h2>
+      <ul>
+        <li>Define MVP scope — <strong>must not become the bottleneck for Goals 1–4</strong></li>
+        <li>Ship v1 in time to actually track the above, not after</li>
+      </ul>
+      <div class="alert-box">
+        <strong>This site is that app.</strong> The checklist and PERT chart below are v1. Keep the scope here deliberately small — its only job is to keep Goals 1–4 moving.
+      </div>
+    </div>
+
+    <div class="plan-card">
+      <h2>Open Decisions</h2>
+      <div class="open-item">1. <strong>Scope balance:</strong> How much AI safety/alignment vs. practical builder/agentic content? This shapes the constitution, the content calendar, and recruiting pitch — decide before writing the purpose statement.</div>
+      <div class="open-item">2. <strong>Sept 10 Involvement Fair:</strong> attend informally with a signup sheet and no official table, or skip and wait for the Spring fair?</div>
+      <div class="open-item">3. <strong>SGA approval turnaround:</strong> unknown. Email Campus Life to find out — every downstream date depends on it.</div>
+      <div class="open-item">4. <strong>Second live-build demo:</strong> does this PM app become a teaching demo, or stay an internal tool?</div>
+    </div>
+
+  </div><!-- /tab-plan -->
+
+  <!-- ═══════ CHECKLIST TAB ═══════ -->
+  <div id="tab-checklist" class="tab-content">
+    <div id="checklist-root"></div>
+  </div>
+
+  <!-- ═══════ PERT TAB ═══════ -->
+  <div id="tab-pert" class="tab-content">
+    <div class="pert-legend">
+      <strong>Node Status:</strong>
+      <div class="legend-item"><div class="ldot complete"></div> Complete</div>
+      <div class="legend-item"><div class="ldot ready"></div> Ready to Start</div>
+      <div class="legend-item"><div class="ldot waiting"></div> Waiting on Dependencies</div>
+      <div class="legend-item"><div class="ldot milestone"></div> Key Milestone</div>
+    </div>
+    <div id="pert-wrap">
+      <div id="pert-network"></div>
+    </div>
+    <p class="pert-instructions">Drag to pan · Scroll to zoom · Nodes update automatically as you check items off</p>
+  </div>
+
+  <!-- ═══════ CURRICULUM TAB ═══════ -->
+  <div id="tab-curriculum" class="tab-content">
+
+    <div class="plan-card">
+      <h2>The Four Pillars</h2>
+      <table class="plan-table">
+        <tr><th>Pillar</th><th>What it covers</th></tr>
+        <tr><td><strong>Safety and Alignment</strong></td><td>Existential and catastrophic risk, misalignment, governance</td></tr>
+        <tr><td><strong>Practical Application</strong></td><td>Things members build and walk away with</td></tr>
+        <tr><td><strong>Under the Hood</strong></td><td>How the systems actually work</td></tr>
+        <tr><td><strong>Learning</strong></td><td>The maintained resource library</td></tr>
+      </table>
+    </div>
+
+    <div class="plan-card">
+      <h2>Learning Library</h2>
+      <ul>
+        <li>Agentic AI Crashcourse</li>
+        <li>Perspective on AI Alignment and Safety from a former OpenAI employee</li>
+        <li>AI Safety Expert on Existential Risk of AI</li>
+        <li>AI 2027</li>
+      </ul>
+    </div>
+
+    <div class="plan-card">
+      <h2>Skills</h2>
+      <p>Things members actually get better at over time — not one-off facts.</p>
+      <ul>
+        <li>Writing clear, specific prompts instead of vague ones</li>
+        <li>Iterating — treating the first answer as a draft, not the final word</li>
+        <li>Fact-checking AI output instead of trusting it blindly</li>
+        <li>Knowing when AI actually helps vs. when it's faster to just do it yourself</li>
+        <li>Reading and debugging code with AI as a second pair of eyes</li>
+        <li>Turning messy input (notes, data, a brain dump) into something organized</li>
+        <li>Giving good examples of what you want instead of only describing it</li>
+      </ul>
+    </div>
+
+    <div class="plan-card">
+      <h2>Tools</h2>
+      <p>Concrete things to actually open and use, hands-on.</p>
+      <ul>
+        <li><strong>Claude.ai</strong> — the chat interface, plus Projects (keeping context organized) and Artifacts (building/sharing a small app or doc)</li>
+        <li><strong>Claude Code</strong> — an AI coding assistant that can read, edit, and run code</li>
+        <li><strong>The Claude API / Anthropic Console</strong> — getting a key and making your own calls, for anyone who wants to build something custom</li>
+        <li><strong>Browser or IDE integrations</strong> that bring AI into tools people already use</li>
+        <li><strong>A comparative look at other AI tools</strong>, so members know the landscape isn't just one product</li>
+      </ul>
+    </div>
+
+    <div class="plan-card">
+      <h2>Applications</h2>
+      <p>Real things members could actually build, try, or walk away with.</p>
+      <ul>
+        <li>A personal study buddy or tutor for their own classes</li>
+        <li>A chatbot with some personality, just for fun</li>
+        <li>A resume/cover letter assistant</li>
+        <li>A small data cleanup or chart-making project</li>
+        <li>A simple app, game, or website</li>
+        <li>Something portfolio-worthy to show off in a job search</li>
+      </ul>
+    </div>
+
+    <div class="plan-card">
+      <h2>Candidate Flagship Talk</h2>
+      <p><strong>"Artificial Intelligence: What I Have Learned"</strong> — Maxwell Boughman, drafted 4 Aug 2026. A full-length outline covering the history of AI, intelligence explosion and recursive self-improvement, the risk landscape, misalignment, deception and scheming, real-world case material, and a deliberate steel-man of the optimist position before closing on regulatory policy and compute governance.</p>
+      <p>Full outline lives in <code style="background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 7px;font-family:'Space Mono',monospace;font-size:.82em;color:var(--accent-bright);">content/talk-outline-ai-what-i-have-learned.md</code>.</p>
+    </div>
+
+  </div><!-- /tab-curriculum -->
+
+</div><!-- /app -->
+
+<!-- Sync indicator -->
+<div class="sync-badge">
+  <div class="sdot" id="sdot"></div>
+  <span id="slabel">Connecting…</span>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// ⚙️  FIREBASE CONFIG
+// ══════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId:         "YOUR_PROJECT_ID",
+  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId:             "YOUR_APP_ID"
+};
+// ══════════════════════════════════════════════════════
+
+// ── Checklist Definition ────────────────────────────────────────────────
+const GROUPS = [
+  {
+    id: "identity", label: "1.1 Define Identity", icon: "🪪", deadline: "This week",
+    items: [
+      { id: "finalize_name",       text: "Finalize club name",                                                                                 pert: "define_identity" },
+      { id: "purpose_statement",   text: "Write 2–3 sentence purpose statement (SGA requires this)",                                            pert: "define_identity" },
+      { id: "mission_statement",   text: "Write mission statement",                                                                             pert: "define_identity" },
+      { id: "scope_balance",       text: "Decide scope balance: AI safety/alignment content vs. practical builder/agentic content",             pert: "define_identity" },
+    ]
+  },
+  {
+    id: "founding_team", label: "1.2 Founding Team", icon: "👥", deadline: "2 weeks — before SGA submission",
+    items: [
+      { id: "officers",            text: "Fill 4 officer roles: President, VP, Treasurer, Secretary/Comms",                                     pert: "founding_team" },
+      { id: "charter_members",     text: "Recruit 10 charter members — need full names + CWIDs",                                                pert: "founding_team" },
+      { id: "advisor",             text: "Identify and confirm a full-time OSU faculty/staff advisor — separate from guest speakers, needs an ongoing yes", pert: "advisor" },
+    ]
+  },
+  {
+    id: "governing_docs", label: "1.3 Governing Documents", icon: "📜", deadline: "Parallel with 1.2",
+    items: [
+      { id: "constitution_template", text: "Check Campus Life for a constitution template before drafting from scratch",                        pert: "constitution" },
+      { id: "constitution",          text: "Write constitution: officer structure, membership rules, meeting cadence, amendment process",       pert: "constitution" },
+    ]
+  },
+  {
+    id: "sga", label: "1.4 SGA Approval", icon: "🏛️", deadline: "Submit ASAP — do not wait",
+    items: [
+      { id: "campuslink_submit",   text: "Submit registration via CampusLink",                                                                  pert: "sga_submit" },
+      { id: "email_campuslife",    text: "Email campuslife@okstate.edu to ask the actual approval turnaround (currently unknown)",              pert: "sga_submit" },
+      { id: "fair_decision",       text: "OPEN DECISION: attend Sept 10 fair informally (signup sheet, no official table) vs. skip and wait for Spring fair", pert: null },
+    ]
+  },
+  {
+    id: "post_approval", label: "1.5 Post-Approval Admin", icon: "🔁", deadline: "Ongoing",
+    items: [
+      { id: "campuslink_page",     text: "Create CampusLink page within 30 days of approval",                                                   pert: "campuslink_page" },
+      { id: "rereg",               text: "Re-register every semester within the first 6 weeks",                                                 pert: "sustain" },
+    ]
+  },
+  {
+    id: "programming", label: "2. Framework & Programming", icon: "📅",
+    items: [
+      { id: "cadence",             text: "Decide meeting cadence (weekly/biweekly) and day/time",                                               pert: "content_calendar" },
+      { id: "reserve_room",        text: "Reserve recurring room — BLOCKED until registered",                                                   pert: "reserve_room" },
+      { id: "content_calendar",    text: "Build semester content calendar: safety/alignment talks + builder workshops + speakers",              pert: "content_calendar" },
+      { id: "resource_library",    text: "Maintain the \"Learning\" resource library (Agentic AI Crashcourse, AI alignment podcast — already started)", pert: "content_calendar" },
+      { id: "builder_workshop",    text: "Design first live-build demo: agent with \"eyes\" (Apify) + \"hands\" (Composio)",                     pert: "builder_workshop" },
+      { id: "pm_app_demo",         text: "Decide whether this PM app becomes a second live-build demo",                                          pert: "builder_workshop" },
+    ]
+  },
+  {
+    id: "speakers", label: "2.4 Speaker Outreach", icon: "🎤",
+    items: [
+      { id: "tier56",              text: "Start with Tier 5/6 (OSU faculty, local founders) — realistic first bookings",                        pert: "speaker_outreach" },
+      { id: "outreach_template",   text: "Draft a reusable outreach email template",                                                            pert: "speaker_outreach" },
+      { id: "migrate_sheet",       text: "Migrate/sync contact-status tracking from the existing speakers spreadsheet into this app",           pert: "speaker_outreach" },
+    ]
+  },
+  {
+    id: "funding", label: "3. Funding & Space", icon: "💰",
+    items: [
+      { id: "budget",              text: "Estimate first-semester budget: room AV, food, speaker travel, marketing materials",                  pert: "budget" },
+      { id: "sga_afap",            text: "Apply for SGA/AFAP funding — BLOCKED until registered",                                               pert: "funding" },
+      { id: "book_space",          text: "Book recurring meeting space — BLOCKED until registered",                                             pert: "funding" },
+    ]
+  },
+  {
+    id: "marketing", label: "4. Marketing & Recruitment", icon: "📣",
+    items: [
+      { id: "fall_fair",           text: "Fall Involvement Fair (Sept 10) — informal table/signup sheet, no official listing yet",              pert: "fall_fair" },
+      { id: "digital_presence",    text: "Build digital presence: email list, Instagram, GroupMe/Discord",                                      pert: "marketing_assets" },
+      { id: "flyers",              text: "Design banner, flyers, and tabling materials",                                                        pert: "marketing_assets" },
+      { id: "network_push",        text: "Personal-network push to hit the 10-charter-member minimum fast (fraternity, IISE, CEAT Scholars, classes)", pert: "recruit_push" },
+    ]
+  },
+  {
+    id: "pm_app", label: "5. Build the PM App (meta)", icon: "🛠️",
+    items: [
+      { id: "mvp_scope",           text: "Define MVP scope — must not become the bottleneck for Goals 1–4",                                     pert: "pm_app_mvp" },
+      { id: "ship_v1",             text: "Ship v1 in time to actually track the above, not after",                                              pert: "pm_app_v1" },
+    ]
+  }
+];
+
+// ── PERT Definition ─────────────────────────────────────────────────────
+const PERT_NODES = [
+  { id: "start",            label: "START",                        level: 0, type: "start",     checklist: [] },
+  { id: "define_identity",  label: "Define\nIdentity",             level: 1, type: "task",      checklist: ["finalize_name","purpose_statement","mission_statement","scope_balance"] },
+  { id: "advisor",          label: "Confirm\nFaculty Advisor",     level: 1, type: "task",      checklist: ["advisor"] },
+  { id: "recruit_push",     label: "Personal-Network\nRecruiting", level: 1, type: "task",      checklist: ["network_push"] },
+  { id: "pm_app_mvp",       label: "Define PM App\nMVP Scope",     level: 1, type: "task",      checklist: ["mvp_scope"] },
+  { id: "constitution",     label: "Write\nConstitution",          level: 2, type: "task",      checklist: ["constitution_template","constitution"] },
+  { id: "founding_team",    label: "Officers +\n10 Charter Members", level: 2, type: "task",    checklist: ["officers","charter_members"] },
+  { id: "content_calendar", label: "Content Calendar\n+ Cadence",  level: 2, type: "task",      checklist: ["cadence","content_calendar","resource_library"] },
+  { id: "marketing_assets", label: "Flyers +\nDigital Presence",   level: 2, type: "task",      checklist: ["digital_presence","flyers"] },
+  { id: "pm_app_v1",        label: "Ship PM App\nv1",              level: 2, type: "task",      checklist: ["ship_v1"] },
+  { id: "sga_submit",       label: "Submit via\nCampusLink",       level: 3, type: "task",      checklist: ["campuslink_submit","email_campuslife"] },
+  { id: "fall_fair",        label: "Involvement Fair\nSept 10",    level: 3, type: "task",      checklist: ["fall_fair"] },
+  { id: "speaker_outreach", label: "Speaker\nOutreach",            level: 3, type: "task",      checklist: ["tier56","outreach_template","migrate_sheet"] },
+  { id: "builder_workshop", label: "Flagship Builder\nWorkshop",   level: 3, type: "task",      checklist: ["builder_workshop","pm_app_demo"] },
+  { id: "budget",           label: "Estimate\nBudget",             level: 3, type: "task",      checklist: ["budget"] },
+  { id: "sga_approved",     label: "SGA APPROVAL ✅",              level: 4, type: "event",     checklist: [] },
+  { id: "campuslink_page",  label: "CampusLink Page\n(30 days)",   level: 5, type: "task",      checklist: ["campuslink_page"] },
+  { id: "reserve_room",     label: "Reserve\nRecurring Room",      level: 5, type: "task",      checklist: ["reserve_room"] },
+  { id: "funding",          label: "SGA/AFAP\nFunding",            level: 5, type: "task",      checklist: ["sga_afap","book_space"] },
+  { id: "first_meeting",    label: "FIRST MEETING 🎓",             level: 6, type: "event",     checklist: [] },
+  { id: "sustain",          label: "Semester\nRe-registration",    level: 7, type: "end",       checklist: ["rereg"] },
+];
+
+const PERT_EDGES = [
+  { from: "start",            to: "define_identity" },
+  { from: "start",            to: "advisor" },
+  { from: "start",            to: "recruit_push" },
+  { from: "start",            to: "pm_app_mvp" },
+  { from: "define_identity",  to: "constitution" },
+  { from: "define_identity",  to: "founding_team" },
+  { from: "define_identity",  to: "content_calendar" },
+  { from: "define_identity",  to: "marketing_assets" },
+  { from: "recruit_push",     to: "founding_team" },
+  { from: "pm_app_mvp",       to: "pm_app_v1" },
+  { from: "marketing_assets", to: "fall_fair" },
+  { from: "recruit_push",     to: "fall_fair" },
+  { from: "constitution",     to: "sga_submit" },
+  { from: "founding_team",    to: "sga_submit" },
+  { from: "advisor",          to: "sga_submit" },
+  { from: "content_calendar", to: "speaker_outreach" },
+  { from: "content_calendar", to: "builder_workshop" },
+  { from: "content_calendar", to: "budget" },
+  { from: "sga_submit",       to: "sga_approved" },
+  { from: "sga_approved",     to: "campuslink_page" },
+  { from: "sga_approved",     to: "reserve_room" },
+  { from: "sga_approved",     to: "funding" },
+  { from: "budget",           to: "funding" },
+  { from: "reserve_room",     to: "first_meeting" },
+  { from: "builder_workshop", to: "first_meeting" },
+  { from: "speaker_outreach", to: "first_meeting" },
+  { from: "pm_app_v1",        to: "first_meeting" },
+  { from: "first_meeting",    to: "sustain" },
+];
+
+// ── State ───────────────────────────────────────────────────────────────
+let state = {};
+let db    = null;
+let pertReady = false;
+let visNodes  = null;
+
+const IS_CONFIGURED = !firebaseConfig.apiKey.startsWith("YOUR_");
+
+// ── Boot ────────────────────────────────────────────────────────────────
+if (IS_CONFIGURED) {
+  document.getElementById('setup-overlay').classList.add('hidden');
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    db.collection('ossai').doc('checklist')
+      .onSnapshot(snap => {
+        state = snap.data() || {};
+        refresh();
+        setSyncStatus('live');
+      }, err => {
+        setSyncStatus('offline');
+        console.error(err);
+      });
+  } catch(e) {
+    setSyncStatus('offline');
+    console.error(e);
+  }
+} else {
+  setSyncStatus('offline');
+  refresh();
+}
+
+// ── Toggle Item ─────────────────────────────────────────────────────────
+async function toggle(id) {
+  state[id] = !state[id];
+  refresh();
+  if (!db) return;
+  setSyncStatus('syncing');
+  try {
+    await db.collection('ossai').doc('checklist').set({ [id]: state[id] }, { merge: true });
+  } catch(e) {
+    setSyncStatus('offline');
+    console.error(e);
+  }
+}
+
+// ── Refresh All UI ──────────────────────────────────────────────────────
+function refresh() {
+  renderChecklist();
+  updateProgress();
+  if (pertReady) updatePertColors();
+}
+
+// ── Checklist Render ────────────────────────────────────────────────────
+function renderChecklist() {
+  const root = document.getElementById('checklist-root');
+  if (!root) return;
+  root.innerHTML = '';
+
+  GROUPS.forEach(g => {
+    const doneCount = g.items.filter(i => state[i.id]).length;
+    const allDone   = doneCount === g.items.length;
+
+    const el = document.createElement('div');
+    el.className = 'checklist-group';
+    el.innerHTML = `
+      <div class="group-header" onclick="toggleGroup(this)">
+        <span class="group-header-left">
+          <span>${g.icon} ${g.label}</span>
+          <span class="group-badge ${allDone ? 'done' : ''}">${doneCount}/${g.items.length}</span>
+          ${g.deadline ? `<span class="group-deadline">${g.deadline}</span>` : ''}
+        </span>
+        <span class="group-chevron open">▶</span>
+      </div>
+      <div class="group-items">
+        ${g.items.map(item => `
+          <div class="check-item ${state[item.id] ? 'done' : ''}" onclick="toggle('${item.id}')">
+            <input type="checkbox" ${state[item.id] ? 'checked' : ''}
+              onclick="event.stopPropagation(); toggle('${item.id}')">
+            <span class="item-label">${item.text}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    root.appendChild(el);
+  });
+}
+
+// ── Collapse/Expand Group ───────────────────────────────────────────────
+function toggleGroup(header) {
+  const items   = header.nextElementSibling;
+  const chevron = header.querySelector('.group-chevron');
+  const collapsed = items.classList.toggle('collapsed');
+  chevron.classList.toggle('open', !collapsed);
+}
+
+// ── Progress Bar ────────────────────────────────────────────────────────
+function updateProgress() {
+  const all  = GROUPS.flatMap(g => g.items);
+  const done = all.filter(i => state[i.id]).length;
+  const pct  = Math.round((done / all.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-pct').textContent  = pct + '%';
+}
+
+// ── Tab Switching ────────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'pert' && !pertReady) initPert();
+}
+
+// ── PERT Helpers ─────────────────────────────────────────────────────────
+function isNodeComplete(nodeDef) {
+  if (!nodeDef.checklist.length) return false;
+  return nodeDef.checklist.every(id => state[id]);
+}
+
+function areDepsDone(nodeDef) {
+  const parentIds = PERT_EDGES.filter(e => e.to === nodeDef.id).map(e => e.from);
+  return parentIds.every(pid => {
+    const pDef = PERT_NODES.find(n => n.id === pid);
+    if (!pDef || pDef.type === 'start') return true;
+    if (!pDef.checklist.length) return areDepsDone(pDef);
+    return isNodeComplete(pDef);
+  });
+}
+
+function nodeColor(nodeDef) {
+  const MILESTONE = { bg: '#2A1A0C', border: '#FF7300', font: '#FFFFFF' };
+  const COMPLETE  = { bg: '#2E1C0A', border: '#FFC48A', font: '#FFC48A' };
+  const READY     = { bg: '#26150A', border: '#FF7300', font: '#FF9A44' };
+  const WAITING   = { bg: '#150E09', border: '#3A2A1C', font: '#60503E' };
+
+  if (nodeDef.type === 'start')  return MILESTONE;
+  if (nodeDef.type === 'event')  return areDepsDone(nodeDef) ? MILESTONE : WAITING;
+  if (nodeDef.type === 'end') {
+    return isNodeComplete(nodeDef) ? COMPLETE : WAITING;
+  }
+  if (isNodeComplete(nodeDef))  return COMPLETE;
+  if (areDepsDone(nodeDef))      return READY;
+  return WAITING;
+}
+
+// ── Init PERT Chart ──────────────────────────────────────────────────────
+function initPert() {
+  pertReady = true;
+
+  visNodes = new vis.DataSet(PERT_NODES.map(n => {
+    const c = nodeColor(n);
+    return {
+      id:    n.id,
+      label: n.label,
+      level: n.level,
+      shape: (n.type === 'start' || n.type === 'event' || n.type === 'end') ? 'box' : 'ellipse',
+      color: { background: c.bg, border: c.border, highlight: { background: c.bg, border: c.border } },
+      font:  { color: c.font, size: 13, face: 'Segoe UI, sans-serif', multi: false },
+      widthConstraint: { minimum: 120, maximum: 150 },
+      margin: 10,
+    };
+  }));
+
+  const visEdges = new vis.DataSet(PERT_EDGES.map((e, i) => ({
+    id:     i,
+    from:   e.from,
+    to:     e.to,
+    arrows: 'to',
+    color:  { color: '#8A6A4A', highlight: '#FF7300', opacity: 0.8 },
+    smooth: { type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.4 },
+  })));
+
+  const container = document.getElementById('pert-network');
+  new vis.Network(container, { nodes: visNodes, edges: visEdges }, {
+    layout: {
+      hierarchical: {
+        direction:       'LR',
+        sortMethod:      'directed',
+        nodeSpacing:     130,
+        levelSeparation: 190,
+      }
+    },
+    physics: false,
+    interaction: { hover: true, zoomView: true, dragView: true },
+  });
+}
+
+// ── Update PERT Colors ───────────────────────────────────────────────────
+function updatePertColors() {
+  if (!visNodes) return;
+  visNodes.update(PERT_NODES.map(n => {
+    const c = nodeColor(n);
+    return {
+      id:    n.id,
+      color: { background: c.bg, border: c.border, highlight: { background: c.bg, border: c.border } },
+      font:  { color: c.font, size: 13 },
+    };
+  }));
+}
+
+// ── Sync Badge ───────────────────────────────────────────────────────────
+function setSyncStatus(s) {
+  const dot   = document.getElementById('sdot');
+  const label = document.getElementById('slabel');
+  dot.className = 'sdot';
+  if (s === 'live')    { label.textContent = 'Live sync';    }
+  if (s === 'syncing') { dot.classList.add('syncing'); label.textContent = 'Saving…'; }
+  if (s === 'offline') { dot.classList.add('offline'); label.textContent = 'Not connected'; }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,73 @@
+{
+  "organization": {
+    "name": "Oklahoma State Society of Artificial Intelligence",
+    "abbreviation": "OSSAI",
+    "institution": "Oklahoma State University",
+    "status": "Pre-registration — founding in progress",
+    "scopeQuestion": "Balance of AI safety/alignment content vs. practical builder/agentic content is an open decision (Goal 1.1)."
+  },
+  "registration": {
+    "authority": "OSU Student Government Association (SGA)",
+    "portal": "CampusLink",
+    "contact": "campuslife@okstate.edu",
+    "requirements": {
+      "purposeStatement": "2-3 sentences, required by SGA",
+      "officers": 4,
+      "officerRoles": ["President", "Vice President", "Treasurer", "Secretary/Comms"],
+      "charterMembers": 10,
+      "charterMemberData": "Full names + CWIDs",
+      "advisor": "One full-time OSU faculty or staff member, ongoing commitment (distinct from guest speakers)",
+      "constitution": "Officer structure, membership rules, meeting cadence, amendment process"
+    },
+    "approvalTurnaround": "Unknown — must confirm with Campus Life",
+    "postApproval": [
+      "Create CampusLink page within 30 days of approval",
+      "Re-register every semester within the first 6 weeks"
+    ]
+  },
+  "keyDates": [
+    {
+      "date": "2026-09-10",
+      "event": "Fall Involvement Fair",
+      "status": "Open decision — attend informally with a signup sheet (no official table until registered) vs. skip and wait for the Spring fair"
+    }
+  ],
+  "blockedUntilRegistered": [
+    "SGA/AFAP funding application",
+    "Recurring meeting room reservation",
+    "Official Involvement Fair table listing"
+  ],
+  "framework": {
+    "pillars": [
+      "Safety and Alignment",
+      "Practical Application",
+      "Under the Hood",
+      "Learning"
+    ],
+    "flagshipWorkshop": {
+      "concept": "Live-build demo of an agent with \"eyes\" (Apify) and \"hands\" (Composio)",
+      "secondDemoCandidate": "The club's own project-management app"
+    }
+  },
+  "speakerOutreach": {
+    "startingTier": "Tier 5/6 — OSU faculty and local founders (most realistic first bookings)",
+    "assets": ["Reusable outreach email template", "Contact-status tracking migrated into this app"]
+  },
+  "budgetCategories": ["Room AV", "Food", "Speaker travel", "Marketing materials"],
+  "recruitmentChannels": [
+    "Fraternity network",
+    "IISE",
+    "CEAT Scholars",
+    "Classes",
+    "Email list",
+    "Instagram",
+    "GroupMe/Discord"
+  ],
+  "sources": {
+    "note": "Derived from the club's Google Drive planning documents.",
+    "documents": [
+      "Oklahoma State Society of Artificial Intelligence (master plan)",
+      "Artifical Intelligence: What I Have Learned (talk outline, Maxwell Boughman, 2026-08-04)"
+    ]
+  }
+}
