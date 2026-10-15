@@ -548,6 +548,8 @@
       border-radius: 2px; cursor: grab; margin-left: -7px;
       box-shadow: 0 0 0 2px var(--surface), 0 0 10px rgba(255,255,255,.35);
     }
+    .gbar.done, .gmile.done { opacity: .38; }
+    .gantt-labels .grow.done span { color: var(--text-dim); }
     .gmile.sel { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--accent-bright); }
 
     .gtip {
@@ -1093,48 +1095,55 @@ const PHASES = [
   { id: "app",          label: "PM App",                       color: "#d55181" },
 ];
 
-// Dates are a first draft, scheduled backward from the Sept 10 Involvement Fair
-// and forward from Aug 20. The SGA review window is a guess — Campus Life has not
-// confirmed a turnaround, so everything downstream of it moves once they reply.
+// Re-baselined Oct 15, 2026. Done items keep their originally planned dates.
+// SGA registration was submitted and is still under review; the approval date
+// is a guess, so everything after it moves once Campus Life replies.
+// Programming is speaker-led (keynotes + industry experts) with some workshops.
 const DEFAULT_TASKS = [
   // ── Registration (critical path) ──
-  { id:"g_identity",   phase:"registration", label:"Define identity (name, purpose, mission, scope)", start:"2026-08-20", end:"2026-08-26" },
-  { id:"g_turnaround", phase:"registration", label:"Email Campus Life re: approval turnaround",       start:"2026-08-20", end:"2026-08-24" },
-  { id:"g_advisor",    phase:"registration", label:"Confirm faculty/staff advisor",                   start:"2026-08-21", end:"2026-09-04" },
-  { id:"g_officers",   phase:"registration", label:"Fill 4 officer roles",                            start:"2026-08-24", end:"2026-09-02" },
-  { id:"g_charter",    phase:"registration", label:"Recruit 10 charter members (names + CWIDs)",      start:"2026-08-24", end:"2026-09-07" },
-  { id:"g_constitution",phase:"registration",label:"Draft constitution",                              start:"2026-08-26", end:"2026-09-04" },
-  { id:"g_submit",     phase:"registration", label:"Submit registration via CampusLink",              start:"2026-09-07", end:"2026-09-08" },
-  { id:"g_review",     phase:"registration", label:"SGA review window",                               start:"2026-09-08", end:"2026-09-29", estimate:true, note:"Duration unconfirmed — Campus Life has not given a turnaround. Everything after this shifts with it." },
-  { id:"g_approved",   phase:"registration", label:"SGA APPROVAL (target)",                           start:"2026-09-29", end:"2026-09-29", milestone:true },
-  { id:"g_cl_page",    phase:"registration", label:"Create CampusLink page (30-day deadline)",        start:"2026-09-29", end:"2026-10-16" },
+  { id:"g_identity",   phase:"registration", label:"Define identity (name, purpose, mission, scope)", start:"2026-08-20", end:"2026-10-15", done:true },
+  { id:"g_turnaround", phase:"registration", label:"Email Campus Life re: approval turnaround",       start:"2026-08-20", end:"2026-08-24", done:true },
+  { id:"g_advisor",    phase:"registration", label:"Confirm faculty/staff advisor",                   start:"2026-08-21", end:"2026-09-04", done:true },
+  { id:"g_officers",   phase:"registration", label:"Fill 4 officer roles",                            start:"2026-08-24", end:"2026-09-02", done:true },
+  { id:"g_charter",    phase:"registration", label:"Recruit 10 charter members (names + CWIDs)",      start:"2026-08-24", end:"2026-09-07", done:true },
+  { id:"g_constitution",phase:"registration",label:"Draft constitution",                              start:"2026-08-26", end:"2026-09-04", done:true },
+  { id:"g_submit",     phase:"registration", label:"Submit registration via CampusLink",              start:"2026-09-07", end:"2026-09-08", done:true },
+  { id:"g_review",     phase:"registration", label:"SGA review window",                               start:"2026-09-08", end:"2026-10-30", estimate:true, note:"Still under review as of Oct 15. End date is a guess — move it when Campus Life replies." },
+  { id:"g_sga_ping",   phase:"registration", label:"Follow up with Campus Life on review status",     start:"2026-10-16", end:"2026-10-20" },
+  { id:"g_approved",   phase:"registration", label:"SGA APPROVAL (target)",                           start:"2026-10-30", end:"2026-10-30", milestone:true },
+  { id:"g_cl_page",    phase:"registration", label:"Create CampusLink page (30-day deadline)",        start:"2026-10-30", end:"2026-11-27" },
 
   // ── Marketing & Recruitment ──
-  { id:"g_network",    phase:"marketing",    label:"Personal-network recruiting push",                start:"2026-08-20", end:"2026-09-07" },
-  { id:"g_flyers",     phase:"marketing",    label:"Design flyers, banner, tabling materials",        start:"2026-08-24", end:"2026-09-04" },
-  { id:"g_digital",    phase:"marketing",    label:"Email list, Instagram, GroupMe/Discord",          start:"2026-08-24", end:"2026-09-08" },
-  { id:"g_fair",       phase:"marketing",    label:"FALL INVOLVEMENT FAIR",                           start:"2026-09-10", end:"2026-09-10", milestone:true },
-  { id:"g_followup",   phase:"marketing",    label:"Follow up with fair signups",                     start:"2026-09-11", end:"2026-09-18" },
+  { id:"g_network",    phase:"marketing",    label:"Personal-network recruiting push",                start:"2026-08-20", end:"2026-09-07", done:true },
+  { id:"g_fair",       phase:"marketing",    label:"FALL INVOLVEMENT FAIR",                           start:"2026-09-10", end:"2026-09-10", milestone:true, done:true },
+  { id:"g_followup",   phase:"marketing",    label:"Re-engage fair signups with the new mission",     start:"2026-10-16", end:"2026-10-23" },
+  { id:"g_digital",    phase:"marketing",    label:"Email list, Instagram, GroupMe/Discord",          start:"2026-10-16", end:"2026-10-30" },
+  { id:"g_flyers",     phase:"marketing",    label:"Flyers + promo for first meeting & keynote",      start:"2026-10-28", end:"2026-11-10" },
 
   // ── Programming & Content ──
-  { id:"g_cadence",    phase:"programming",  label:"Decide meeting cadence + day/time",               start:"2026-08-31", end:"2026-09-04" },
-  { id:"g_calendar",   phase:"programming",  label:"Build semester content calendar",                 start:"2026-08-31", end:"2026-09-18" },
-  { id:"g_template",   phase:"programming",  label:"Draft speaker outreach email template",           start:"2026-09-14", end:"2026-09-16" },
-  { id:"g_speakers",   phase:"programming",  label:"Speaker outreach — Tier 5/6",                     start:"2026-09-14", end:"2026-10-16" },
-  { id:"g_workshop",   phase:"programming",  label:"Design builder workshop (Apify + Composio)",      start:"2026-09-21", end:"2026-10-09" },
+  { id:"g_cadence",    phase:"programming",  label:"Decide meeting cadence + day/time",               start:"2026-10-16", end:"2026-10-22" },
+  { id:"g_template",   phase:"programming",  label:"Draft speaker outreach email template",           start:"2026-10-16", end:"2026-10-20" },
+  { id:"g_calendar",   phase:"programming",  label:"Content calendar: speakers + learning sessions",  start:"2026-10-19", end:"2026-10-30" },
+  { id:"g_speakers",   phase:"programming",  label:"Speaker outreach — OSU faculty, local experts",   start:"2026-10-19", end:"2026-11-20" },
+  { id:"g_keynote",    phase:"programming",  label:"Book first keynote speaker",                      start:"2026-10-19", end:"2026-11-06" },
+  { id:"g_industry",   phase:"programming",  label:"Line up industry-expert talks",                   start:"2026-10-26", end:"2026-11-20", note:"How AI has changed their field and how they've applied it." },
+  { id:"g_session1",   phase:"programming",  label:"Prep session: AI history & how AI works",         start:"2026-10-26", end:"2026-11-06" },
+  { id:"g_safety",     phase:"programming",  label:"Prep session: AI risks & safety",                 start:"2026-11-09", end:"2026-11-20" },
+  { id:"g_workshop",   phase:"programming",  label:"Design hands-on workshop (agent demo)",           start:"2026-11-09", end:"2026-11-25" },
   { id:"g_library",    phase:"programming",  label:"Maintain Learning resource library (ongoing)",    start:"2026-08-31", end:"2026-12-11" },
-  { id:"g_meeting1",   phase:"programming",  label:"FIRST GENERAL MEETING",                           start:"2026-10-13", end:"2026-10-13", milestone:true },
+  { id:"g_meeting1",   phase:"programming",  label:"FIRST GENERAL MEETING",                           start:"2026-11-10", end:"2026-11-10", milestone:true },
+  { id:"g_keynote_ev", phase:"programming",  label:"FIRST KEYNOTE EVENT",                             start:"2026-12-01", end:"2026-12-01", milestone:true },
 
   // ── Funding & Space ──
-  { id:"g_budget",     phase:"funding",      label:"Estimate first-semester budget",                  start:"2026-09-14", end:"2026-09-18" },
-  { id:"g_room",       phase:"funding",      label:"Reserve recurring meeting room",                  start:"2026-09-29", end:"2026-10-06" },
-  { id:"g_afap",       phase:"funding",      label:"Apply for SGA/AFAP funding",                      start:"2026-09-29", end:"2026-10-09" },
+  { id:"g_budget",     phase:"funding",      label:"Estimate budget (speaker travel, AV, food)",      start:"2026-10-19", end:"2026-10-23" },
+  { id:"g_room",       phase:"funding",      label:"Reserve recurring meeting room",                  start:"2026-10-30", end:"2026-11-06" },
+  { id:"g_afap",       phase:"funding",      label:"Apply for SGA/AFAP funding",                      start:"2026-10-30", end:"2026-11-13" },
 
   // ── PM App ──
-  { id:"g_mvp",        phase:"app",          label:"Define PM app MVP scope",                         start:"2026-08-19", end:"2026-08-20" },
-  { id:"g_v1",         phase:"app",          label:"TRACKER v1 LIVE",                                 start:"2026-08-20", end:"2026-08-20", milestone:true },
-  { id:"g_migrate",    phase:"app",          label:"Migrate speaker tracking into app",               start:"2026-09-21", end:"2026-09-25" },
-  { id:"g_iterate",    phase:"app",          label:"Iterate on officer feedback",                     start:"2026-08-21", end:"2026-10-16" },
+  { id:"g_mvp",        phase:"app",          label:"Define PM app MVP scope",                         start:"2026-08-19", end:"2026-08-20", done:true },
+  { id:"g_v1",         phase:"app",          label:"TRACKER v1 LIVE",                                 start:"2026-08-20", end:"2026-08-20", milestone:true, done:true },
+  { id:"g_migrate",    phase:"app",          label:"Migrate speaker tracking into app",               start:"2026-10-26", end:"2026-10-30" },
+  { id:"g_iterate",    phase:"app",          label:"Iterate on officer feedback",                     start:"2026-08-21", end:"2026-12-11" },
 ];
 
 // ── State ───────────────────────────────────────────────────────────────
@@ -1171,7 +1180,9 @@ if (IS_CONFIGURED) {
         tasks = (d && Array.isArray(d.tasks) && d.tasks.length) ? d.tasks : cloneDefaults();
         if (!ganttDragging) renderGantt();
       }, err => {
-        setSyncStatus('offline');
+        // Can't read the shared schedule (e.g. Firestore rules) — show the defaults
+        tasks = cloneDefaults();
+        renderGantt();
         console.error(err);
       });
   } catch(e) {
@@ -1462,15 +1473,16 @@ function renderGantt() {
 
     inPhase.forEach(t => {
       const sel = selectedTask === t.id ? ' sel' : '';
-      labelRows += `<div class="grow${sel}" onclick="selectTask('${t.id}')" title="${escAttr(t.label)}"><span>${escHtml(t.label)}</span></div>`;
+      const done = t.done ? ' done' : '';
+      labelRows += `<div class="grow${sel}${done}" onclick="selectTask('${t.id}')" title="${escAttr(t.label)}"><span>${t.done ? '✓ ' : ''}${escHtml(t.label)}</span></div>`;
 
       const s = pd(t.start), e = pd(t.end);
       const x = dayDiff(lo, s) * DAY_W;
       if (t.milestone) {
-        chartRows += `<div class="grow"><div class="gmile${sel}" data-id="${t.id}" style="left:${x + DAY_W/2}px"></div></div>`;
+        chartRows += `<div class="grow"><div class="gmile${sel}${done}" data-id="${t.id}" style="left:${x + DAY_W/2}px"></div></div>`;
       } else {
         const w = Math.max(dayDiff(s, e) + 1, 1) * DAY_W;
-        chartRows += `<div class="grow"><div class="gbar${sel}${t.estimate ? ' gbar-est' : ''}" data-id="${t.id}" `
+        chartRows += `<div class="grow"><div class="gbar${sel}${done}${t.estimate ? ' gbar-est' : ''}" data-id="${t.id}" `
                   +  `style="left:${x}px;width:${w}px;background-color:${p.color}">`
                   +  `<div class="ghandle l"></div><div class="ghandle r"></div></div></div>`;
       }
