@@ -4,7 +4,9 @@
     "abbreviation": "OSSAI",
     "institution": "Oklahoma State University",
     "status": "Pre-registration — founding in progress",
-    "scopeQuestion": "Balance of AI safety/alignment content vs. practical builder/agentic content is an open decision (Goal 1.1)."
+    "scopeDecision": "Speaker-led (keynotes + industry experts); core topics are AI safety, AI history, and how AI works, with learning sessions mixed in. Builder/agentic workshop share still to settle.",
+    "missionStatement": "Our mission is to give Oklahoma State students a complete picture of artificial intelligence — where it came from, how it works, and where it is headed. We trace the history of AI's development and explain the ideas and mechanics behind today's systems in terms anyone can follow. We bring keynote speakers and industry experts to campus to share firsthand how AI is reshaping their fields, how they have applied it, and what it has changed. And we take a hard look at how AI is evolving, the risks it poses, and the work being done to make it safe. Our goal is to help students from every major understand this technology deeply enough to anticipate what's coming and prepare for a world being transformed by it.",
+    "purposeStatement": "We explore AI's past, present, and future: its history, how it actually works, how industry experts are applying it today, and the risks it brings tomorrow, helping students from every major prepare for the change ahead."
   },
   "registration": {
     "authority": "OSU Student Government Association (SGA)",

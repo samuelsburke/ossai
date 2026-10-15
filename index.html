@@ -286,6 +286,14 @@
       margin: .5rem 0; font-size: .89rem; color: var(--text-mid); line-height: 1.6;
     }
     .open-item strong { color: var(--text); }
+    .mission-text {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--accent);
+      padding: 1rem 1.25rem; border-radius: 0 10px 10px 0;
+      margin: .5rem 0 1rem; color: var(--text); line-height: 1.75; font-size: .92rem;
+    }
+    .pillar-list li strong { color: var(--accent-bright); }
     .blocked-tag {
       display: inline-block;
       background: rgba(248,113,113,.1);
@@ -681,13 +689,34 @@ const firebaseConfig = {
     </div>
 
     <div class="plan-card">
+      <h2>Mission &amp; Purpose</h2>
+      <h3>Mission Statement</h3>
+      <div class="mission-text">
+        Our mission is to give Oklahoma State students a complete picture of artificial intelligence — where it came from, how it works, and where it is headed. We trace the history of AI's development and explain the ideas and mechanics behind today's systems in terms anyone can follow. We bring keynote speakers and industry experts to campus to share firsthand how AI is reshaping their fields, how they have applied it, and what it has changed. And we take a hard look at how AI is evolving, the risks it poses, and the work being done to make it safe. Our goal is to help students from every major understand this technology deeply enough to anticipate what's coming and prepare for a world being transformed by it.
+      </div>
+      <h3>Purpose Statement <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);">— short version for SGA / CampusLink</span></h3>
+      <div class="mission-text">
+        We explore AI's past, present, and future: its history, how it actually works, how industry experts are applying it today, and the risks it brings tomorrow, helping students from every major prepare for the change ahead.
+      </div>
+      <h3>Past · Present · Future</h3>
+      <ul class="pillar-list">
+        <li><strong>Past</strong> — the history of AI's development</li>
+        <li><strong>Present</strong> — how AI works under the hood; industry experts on how they've applied it</li>
+        <li><strong>Future</strong> — how AI is evolving, its risks and safety, and how students should prepare</li>
+      </ul>
+      <div class="alert-box">
+        <strong>Different from AI Wranglers, not competing with them.</strong> Their mission is hands-on projects and workshops for applying AI and building career skills. OSSAI's is speaker-led — keynotes and industry experts — with AI safety, history, and how AI works as core topics, and learning sessions in a supporting role. A student could reasonably join both.
+      </div>
+    </div>
+
+    <div class="plan-card">
       <h2>Goal 1 — Legal Foundation (Registration)</h2>
       <h3>1.1 Define Identity <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);">— deadline: this week</span></h3>
       <ul>
         <li>Finalize club name</li>
-        <li>Write a 2–3 sentence purpose statement (SGA requires this)</li>
-        <li>Write mission statement</li>
-        <li>Decide the scope balance: AI safety/alignment content vs. practical builder/agentic content</li>
+        <li>Write a 2–3 sentence purpose statement (SGA requires this) <em>— drafted, see Mission &amp; Purpose</em></li>
+        <li>Write mission statement <em>— drafted, see Mission &amp; Purpose</em></li>
+        <li>Decide the scope balance: AI safety/alignment content vs. practical builder/agentic content <em>— decided: speaker-led, safety + history + how AI works, learning mixed in</em></li>
       </ul>
       <h3>1.2 Build the Founding Team <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim);">— target: 2 weeks, before SGA submission</span></h3>
       <ul>
@@ -771,7 +800,7 @@ const firebaseConfig = {
 
     <div class="plan-card">
       <h2>Open Decisions</h2>
-      <div class="open-item">1. <strong>Scope balance:</strong> How much AI safety/alignment vs. practical builder/agentic content? This shapes the constitution, the content calendar, and recruiting pitch — decide before writing the purpose statement.</div>
+      <div class="open-item">1. <strong>Scope balance — decided:</strong> speaker-led (keynotes + industry experts), with AI safety, AI history, and how AI works as core topics and learning sessions mixed in. See Mission &amp; Purpose. Still to settle: how much of the builder/agentic workshop content in Goal 2 stays.</div>
       <div class="open-item">2. <strong>Sept 10 Involvement Fair:</strong> attend informally with a signup sheet and no official table, or skip and wait for the Spring fair?</div>
       <div class="open-item">3. <strong>SGA approval turnaround:</strong> unknown. Email Campus Life to find out — every downstream date depends on it.</div>
       <div class="open-item">4. <strong>Second live-build demo:</strong> does this PM app become a teaching demo, or stay an internal tool?</div>
